@@ -1,15 +1,16 @@
 import jsonschema
 from jsonschema import validate
-from .errorList import ErrorList
+from .requestErrorList import ErrorList
 
 class Request:
+
     def __init__(self, request):
-        self.request = request
+        self.data = request
         self.error = ErrorList.ok.value
 
     def validate(self, schema):
         try:
-            validate(self.request, schema)
+            validate(self.data, schema)
         except jsonschema.exceptions.ValidationError:
             self.error = ErrorList.validation.value
             return False

@@ -4,16 +4,30 @@ SHOP_UNIT_IMPORT_REQUEST = {
         "items": {
             "type": "array",
             "items": { 
-                "type": "object",
-                "properties": {
-                    "id": { "type": "string" },
-                    "type": { "type": "string", "enum": ["OFFER", "CATEGORY"] },
-                    "name": { "type": "string" },
-                    "parentId": { "type": ["string", "null"] },
-                    "price": { "type": "number" }
-                },
-                "required": ["id", "type", "name", "parentId"] 
-             }
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "type": { "type": "string", "enum": ["OFFER"] },
+                            "name": { "type": "string" },
+                            "parentId": { "type": ["string", "null"] },
+                            "price": { "type": "number" }
+                        },
+                        "required": ["id", "type", "name", "parentId", "price"] 
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "id": { "type": "string" },
+                            "type": { "type": "string", "enum": ["CATEGORY"] },
+                            "name": { "type": "string" },
+                            "parentId": { "type": ["string", "null"] }
+                        },
+                        "required": ["id", "type", "name", "parentId"] 
+                    }
+                ]
+            }
         },
         "updateDate": { "type": "string" }
     },
