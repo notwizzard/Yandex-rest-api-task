@@ -33,11 +33,15 @@ class Database:
         if not self.connect():
             return False
 
-        units = [[d["id"], str(d["name"]), d["type"], d["parentId"], data["updateDate"], d.get("price")] for d in data["items"]]
+        units = [[d["id"], d["name"], d["type"], d["parentId"], data["updateDate"], d.get("price")] for d in data["items"]]
         args = [a for u in units for a in u]
-        
+
+        query = "INSERT INTO products (id, name, type, parentid, updatedate, price) VALUES "
+        query += ",".join(["(%s, %s, %s, %s, %s, %s)"] * len(units))
+        query += " ON CONFLICT (id) DO UPDATE SET (id, name, type, parentid, updatedate, price) = (EXCLUDED.id, EXCLUDED.name, EXCLUDED.type, EXCLUDED.parentid, EXCLUDED.updatedate, EXCLUDED.price)"
+
         try:
-            self.cursor.execute("INSERT INTO products (id, name, type, parentid, updatedate, price) VALUES " + "(%s, %s, %s, %s, %s, %s)" * len(units), args)
+            self.cursor.execute(query, args)
             self.connection.commit()
         except:
             self.error = ErrorList.insertion.value

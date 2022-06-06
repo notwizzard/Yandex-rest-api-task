@@ -17,6 +17,7 @@ class Handler:
         
         if not self.database.add_data(request.data):
             print(self.database.error)
+            return web.Response(status=500)    
 
         return web.Response(status=200)
         

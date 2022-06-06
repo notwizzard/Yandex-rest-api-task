@@ -1,5 +1,5 @@
 from .request import Request
-from datetime import datetime
+import dateutil.parser
 from .requestErrorList import ErrorList
 
 class ImportRequest(Request):
@@ -11,7 +11,7 @@ class ImportRequest(Request):
             return False
         
         try:
-            self.data["updateDate"] = datetime.fromisoformat(self.data["updateDate"])
+            self.data["updateDate"] = dateutil.parser.isoparse(self.data["updateDate"])
         except:
             self.error = ErrorList.validation.value
             return False
