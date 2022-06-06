@@ -2,6 +2,5 @@ import enum
 
 class ErrorList(enum.Enum):
     ok = "ok"
-    insertion = "Insertion Failed"
-    selection = "Selection Failed"
+    execution = "Execute Failed"
     connection = "Connection Failed"

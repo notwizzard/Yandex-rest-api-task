@@ -15,9 +15,22 @@ class Handler:
         if not request.validate(SHOP_UNIT_IMPORT_REQUEST):
             return web.Response(text=json.dumps(request.error), status=request.error["code"])  
         
-        if not self.database.add_data(request.data):
+        if not self.database.import_data(request.data):
             print(self.database.error)
             return web.Response(status=500)    
 
         return web.Response(status=200)
+
+    async def delete(self, request):
+        if not self.database.delete_data(request.match_info["id"]):
+            return web.Response(status=404)
+        
+        return web.Response(status=200)
+
+    async def nodes(self, request):
+        tree = self.database.get_nodes(request.match_info["id"])
+        if tree == None:
+            return web.Response(status=404)
+        
+        return web.Response(text=json.dumps(tree, ensure_ascii=False), status=200)
         
