@@ -1,6 +1,6 @@
 from .request import Request
 import dateutil.parser
-from .requestErrorList import ErrorList
+from .errorList import ErrorList
 
 class ImportRequest(Request):
     def __init__(self, request):

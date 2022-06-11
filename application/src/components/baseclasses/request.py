@@ -1,6 +1,6 @@
 import jsonschema
 from jsonschema import validate
-from .requestErrorList import ErrorList
+from .errorList import ErrorList
 
 class Request:
 
