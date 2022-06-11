@@ -1,3 +1,5 @@
+from typing import Dict, List, Tuple
+from datetime import datetime
 import pymongo
 from .errorList import ErrorList
 
@@ -8,7 +10,8 @@ class Database:
         self.client = self.connect()
         self.db = self.client.yandex_db
         self.products = self.db.get_collection('products')
-        self.statistics = self.db.get_collection('statistics')
+        # self.sales = self.db.get_collection('sales')
+        # self.statistics = self.db.get_collection('statistics')
 
 
     def connect(self) -> pymongo.mongo_client.MongoClient:
@@ -20,11 +23,32 @@ class Database:
         return client
 
 
-    def delete_data(self, id):
-        pass 
+    def delete_data(self, item_id : str) -> bool:
+        
+        def delete_item(id: str) -> None:
+            self.products.delete_one({'id': id})
+
+        def delete_tree(id: str) -> None:
+            children = self.products.find({'parentId': id})
+            if not children:
+                return delete_item(id)
+
+            for child in children:
+                delete_tree(child['id'])
+
+            return delete_item(id)
+
+        item = self.products.find_one({'id': item_id})
+        if not item:
+            return False
+
+        delete_tree(item_id)
+
+        return True
 
 
-    def update_parent_date(self, item) -> None:
+    def update_parent_date(self, item : Dict) -> None:
+
         parent_id = item['parentId']
         while parent_id:
             self.products.update_one({
@@ -38,20 +62,26 @@ class Database:
             parent_id = self.products.find_one({'id': parent_id})['parentId']
 
 
-    def import_data(self, data) -> None:        
+    def import_data(self, data : Dict) -> None:        
         
-        def insert_item(item):
+        def insert_item(item : Dict) -> None:
             self.products.insert_one(item)
 
-        def update_item(item):
-            old_item = self.products.find_one({'id': item['id']})
+        def update_item(item : Dict, old_item : Dict) -> None:
             self.products.update_one({
                 'id': item['id']
             }, {
                 '$set': item 
-            })       
-            self.update_parent_date(old_item)     
+            })  
 
+            if old_item['parentId'] != item['parentId']:
+                self.update_parent_date(old_item)
+                self.update_parent_date(item)
+                return
+
+            if old_item.get('price') != item.get('price'):
+                self.update_parent_date(item)
+                     
         data['items'].sort(key=lambda x: x['type'])
 
         for item in data['items']:
@@ -61,18 +91,22 @@ class Database:
             else:
                 item['children'] = None
 
-            if self.products.find_one({'id': item['id']}):
-                update_item(item)
+            old_item = self.products.find_one({'id': item['id']})
+            if old_item:
+                update_item(item, old_item)
             else:
                 insert_item(item)
 
             self.update_parent_date(item)
 
     
-    def build_node(self, root) -> tuple([int, int]):
-            
+    def build_node(self, root : Dict) -> Tuple[int, int]:
+        
         def set_price():
             root['price'] = total_price // max(1, number)
+
+        if not root:
+            return 0, 0
 
         root['date'] = root['date'].strftime("%Y-%m-%dT%H:%M:%SZ") 
         if root['type'] == 'OFFER':
@@ -97,10 +131,16 @@ class Database:
         return total_price, number
 
 
-    def get_nodes(self, id) -> dict:
+    def get_nodes(self, id : str) -> Dict:
 
         root = self.products.find_one({'id': id}, {'_id': False})
         self.build_node(root)
 
         return root
 
+    
+    def sales(self, date : datetime) -> Dict:
+        pass
+
+    def statistics(self, id : str, date_start : datetime, date_end : datetime) -> Dict:
+        pass
