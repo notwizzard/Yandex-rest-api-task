@@ -3,10 +3,10 @@ import json
 from typing import Dict
 import dateutil.parser
 from datetime import datetime
-from .baseclasses.importRequest import ImportRequest
-from .baseclasses.errorList import ErrorList
-from .baseclasses.database import Database
-from .schemas.ShopUnitImportRequest import SHOP_UNIT_IMPORT_REQUEST 
+from .importRequest import ImportRequest
+from .errorList import ErrorList
+from .database import Database
+from ..schemas.ShopUnitImportRequest import SHOP_UNIT_IMPORT_REQUEST 
 
 class Handler:
 
@@ -86,5 +86,8 @@ class Handler:
             return web.Response(text=json.dumps(error, ensure_ascii=False), status=error['code'])
         
         result = self.database.statistics(id, date_start, date_end)
+        if not result:
+            error = ErrorList.existence.value
+            return web.Response(text=json.dumps(error, ensure_ascii=False), status=error['code'])
 
         return web.Response(text=json.dumps(result, ensure_ascii=False), status=200)

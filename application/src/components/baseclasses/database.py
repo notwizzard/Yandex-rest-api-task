@@ -140,7 +140,10 @@ class Database:
 
     
     def sales(self, date : datetime) -> Dict:
-        pass
+        return {}
+
 
     def statistics(self, id : str, date_start : datetime, date_end : datetime) -> Dict:
-        pass
+        return {
+            'not_empty': True
+        }

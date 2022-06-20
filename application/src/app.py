@@ -1,5 +1,5 @@
 from aiohttp import web
-from components.handler import Handler
+from components.baseclasses.handler import Handler
 
 def main():
     handler = Handler()
